@@ -158,18 +158,18 @@ int main()                                    // main function
                 drive_speed(TRAVELSPEED +controlSignal, TRAVELSPEED -controlSignal );
               else drive_speed(TRAVELSPEED, TRAVELSPEED ); 
                     
-        fdserial_txChar(lrf, 'B');
+        fdserial_txChar(lrf, 'B'); // gets a two byte measurment in millimeters 
                   
                   
-   while((i2 = fdserial_rxCount(lrf)) < 4);
-      LRF_in1[0] = fdserial_rxChar(lrf);
-      distance_mm2 = LRF_in1[0] << 8;
-      i2--;
-      LRF_in1[0] = fdserial_rxChar(lrf);
-      distance_mm2 = distance_mm2 | LRF_in1[0];
+   while((i2 = fdserial_rxCount(lrf)) < 4);  // 1024mm > is good?
+      LRF_in1[0] = fdserial_rxChar(lrf);    // gets first byte
+      distance_mm2 = LRF_in1[0] << 8;       // shifts first byte over by a byte
+      i2--;                                 
+      LRF_in1[0] = fdserial_rxChar(lrf);     // gets second byte
+      distance_mm2 = distance_mm2 | LRF_in1[0];     // combines the two bytes
 //      print("%d %d\n", distance_mm, i);          // Display result
       i2--;
-  while(i2 > 0) {
+  while(i2 > 0) {   // making sure reading is not negative
       LRF_in1[0] = fdserial_rxChar(lrf);
       i2--;
     }      
@@ -180,11 +180,11 @@ int main()                                    // main function
     if(Control_Signal < -125) Control_Signal = -125;
     //drive_speed(-Control_Signal, -Control_Signal); // send the control signal to the wheel servos
     
-    if(!(Forward_Error > 2 || Forward_Error < -2 )){
+    if(!(Forward_Error > 20 || Forward_Error < -20 )){ //originally was 2
       
       pause(1000);
-         drive_speed(60, 0); // send the control signal to the wheel servos
-         pause(500);
+         drive_speed(90, 0); // send the control signal to the wheel servos
+         pause(500); 
          Forward_Error = 100; 
     }      
             }                
