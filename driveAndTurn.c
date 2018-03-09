@@ -50,8 +50,8 @@
 #include "servo.h"
 
 // Constant values used in the system control
-#define TRAVELSPEED 30 
-#define SIDE_SETPOINT_MM 100 
+#define TRAVELSPEED 50 
+#define SIDE_SETPOINT_MM 226   //  was 100 
 #define KP_FORWARD 1
 #define KP_SiDEWAYS 1
 #define PING_FRONT_PIN 16
@@ -60,7 +60,7 @@
 
 // Define some constants used in this program
 //#define MM_PER_TICK 3.25
-#define FORWARD_SETPOINT_MM 200
+#define FORWARD_SETPOINT_MM 736    // 26 cm from wall 285
 #define rxPin    02  // Serial input (connects to the LRF's SOUT pin)
 #define txPin    03  // Serial output (connects to the LRF's SIN pin)
 #define BAUD  38400  // Baud rate for Laser Range Finder
@@ -91,6 +91,53 @@ void getPing() { // separate cog function for continuous Ping distance measureme
 int Right_mm, Left_mm;
 float oldHeading = 0.0, relativeHeading = 0.0;
 
+void rightTurn(){
+  
+   //pause(1000);
+   
+   drive_speed(40, 40); // send the control signal to the wheel servos 
+   pause(4000);
+   
+   drive_speed(30, 0); // send the control signal to the wheel servos 
+   pause(1650);        //
+
+   
+   drive_speed(40, 40); // send the control signal to the wheel servos 
+   pause(3700);   
+   
+   drive_speed(30, 0); // send the control signal to the wheel servos 
+   pause(1650);    
+   
+   drive_speed(30, 30); // send the control signal to the wheel servos 
+   pause(3000);
+   //Forward_Error = 100; 
+         
+}
+
+
+void leftTurn(){
+  
+   //pause(1000);
+   
+   drive_speed(40, 40); // send the control signal to the wheel servos 
+   pause(4000);
+   
+   drive_speed(0, 30); // send the control signal to the wheel servos 
+   pause(1650);        //
+
+   
+   drive_speed(40, 40); // send the control signal to the wheel servos 
+   pause(3700);   
+   
+   drive_speed(0, 30); // send the control signal to the wheel servos 
+   pause(1650);    
+   
+   drive_speed(30, 30); // send the control signal to the wheel servos 
+   pause(3000);
+   //Forward_Error = 100; 
+         
+}
+    
 
 int main()                                    // main function
 {
@@ -98,6 +145,7 @@ int main()                                    // main function
   int i, t, state = -1;
   float Kp = 0.4;
   
+  int turnState = 0;
   
   drive_speed(0, 0);
   state = -1;
@@ -110,7 +158,7 @@ int main()                                    // main function
   int i2, j, distance_mm2;
   char LRF_in1[1] ;
   float Kp2 = 1.0;
-    int Forward_Error=100, Control_Signal;
+  int Forward_Error=100, Control_Signal;
  
 
   
@@ -180,12 +228,29 @@ int main()                                    // main function
     if(Control_Signal < -125) Control_Signal = -125;
     //drive_speed(-Control_Signal, -Control_Signal); // send the control signal to the wheel servos
     
-    if(!(Forward_Error > 20 || Forward_Error < -20 )){ //originally was 2
+    if(!(Forward_Error > 25 || Forward_Error < -25 )){ //originally was 2 
+    //we can modify the code above to account for turning a distance further away from the wall (distance from side wall to end of board)
+    //  
       
-      pause(1000);
-         drive_speed(90, 0); // send the control signal to the wheel servos
-         pause(500); 
+        if(turnState == 3){
+          drive_speed(80, 80); // send the control signal to the wheel servos 
+          pause(2000);
+   
+          drive_speed(0,0);
+          return 1;
+        }          
+        else if(turnState % 2 == 0){
+          rightTurn();
+        }          
+        else{
+          leftTurn();
+        }   
+        turnState++;     
          Forward_Error = 100; 
+         
+         // we need another if statement to account for the large turn 
+         
+         // if ( Forward_Error
     }      
             }                
 }
