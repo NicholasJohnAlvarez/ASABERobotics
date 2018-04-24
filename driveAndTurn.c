@@ -48,6 +48,7 @@
 #include "ping.h"                             // Include ping header
 #include "fdserial.h"
 #include "servo.h"
+#include "wifi.h"
 
 // Constant values used in the system control
 #define TRAVELSPEED 50 
@@ -138,6 +139,49 @@ void leftTurn(){
          
 }
     
+int getZone(float distancemm, int turnState){
+  if(turnState == 0){
+    if(distancemm > 590.6 && distancemm < 997)
+      return 12;
+    else if(distancemm > 997 && distancemm < 1403.4)
+      return 11;
+    else if(distancemm > 1403.4 && distancemm < 1809.8)
+      return 10;
+    else
+      return 0;
+  }
+  else if(turnState == 1){
+    if(distancemm > 590.6 && distancemm < 997)
+      return 7;
+    else if(distancemm > 997 && distancemm < 1403.4)
+      return 8;
+    else if(distancemm > 1403.4 && distancemm < 1809.8)
+      return 9;
+    else
+      return 0;
+  }
+  else if(turnState == 2){
+    if(distancemm > 590.6 && distancemm < 997)
+      return 6;
+    else if(distancemm > 997 && distancemm < 1403.4)
+      return 5;
+    else if(distancemm > 1403.4 && distancemm < 1809.8)
+      return 4;
+    else
+      return 0;
+  }
+  else if(turnState == 3){
+    if(distancemm > 590.6 && distancemm < 997)
+      return 1;
+    else if(distancemm > 997 && distancemm < 1403.4)
+      return 2;
+    else if(distancemm > 1403.4 && distancemm < 1809.8)
+      return 3;
+    else
+      return 0;
+  }      
+  
+}    
 
 int main()                                    // main function
 {
@@ -146,6 +190,9 @@ int main()                                    // main function
   float Kp = 0.4;
   
   int turnState = 0;
+  int zone = 10;
+  
+  wifi_start(31, 30, 115200, WX_ALL_COM); // sets all communication methods via wifi (program, terminal)
   
   drive_speed(0, 0);
   state = -1;
@@ -227,7 +274,7 @@ int main()                                    // main function
     if(Control_Signal > 125) Control_Signal = 125;  // bound the control signal to be within the servo limits
     if(Control_Signal < -125) Control_Signal = -125;
     //drive_speed(-Control_Signal, -Control_Signal); // send the control signal to the wheel servos
-    
+        
     if(!(Forward_Error > 25 || Forward_Error < -25 )){ //originally was 2 
     //we can modify the code above to account for turning a distance further away from the wall (distance from side wall to end of board)
     //  
@@ -247,10 +294,14 @@ int main()                                    // main function
         }   
         turnState++;     
          Forward_Error = 100; 
-         
+                  
          // we need another if statement to account for the large turn 
          
          // if ( Forward_Error
-    }      
-            }                
+    } 
+    
+    zone = getZone(distance_mm2, turnState);
+    print("Distance: %d, Zone: %d", distance_mm2, zone);   
+    //print(zone);     
+    }                
 }
